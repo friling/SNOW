@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Import Excel</title>
+</head>
+<body>
+    <h1>Import Excel Data</h1>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" id="file">
+        <input type="submit" value="Import">
+    </form>
+    <br>
+    <div id="table-container"></div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $("form").submit(function(e) {
+                e.preventDefault();
+                var formData = new FormData(this);
+                $.ajax({
+                    type: "POST",
+                    url: "/upload",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        $("#table-container").html(response);
+                    }
+                });
+            });
+        });
+
+        function filterTable() {
+            var selectedManager = $("#picklist").val();
+            $("table tr").each(function() {
+                var rowManager = $(this).find(".Requestor").text().trim();
+                if (rowManager !== selectedManager && selectedManager !== "All") {
+                    $(this).hide();
+                } else {
+                    $(this).show();
+                }
+            });
+        }
+    </script>
+</body>
+</html>

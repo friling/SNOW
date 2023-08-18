@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Imported Data</title>
+    <<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Imported Data</h1>
+    <p>Select a manager:</p>
+    <select id="picklist" onchange="filterTable()">
+        <option value="All">All</option>
+        {% for manager in managers %}
+            <option value="{{ manager }}">{{ manager }}</option>
+        {% endfor %}
+    </select>
+    <table>
+        <thead>
+            <tr>
+                <th>Number</th>
+                <th>Priority</th>
+                <th>State</th>
+                <th>Short description</th>
+                <th>Assignment group</th>
+                <th>Assigned to</th>
+                <th class="manager-cell">Requestor1</th>
+                <th class="manager-cell">Requestor2</th>
+                <th class="manager-cell">Requestor3</th>
+                <th class="manager-cell">Requestor4</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in data %}
+            <tr>
+                <td>
+                    <a href="https://irvingoil.service-now.com/sc_task.do?sysparm_query=number={{ row['Number'] }}">{{ row['Number'] }}</a>
+                </td>
+                <td>{{ row['Priority'] }}</td>
+                <td>{{ row['State'] }}</td>
+                <td>{{ row['Short description'] }}</td>
+                <td>{{ row['Assignment group'] }}</td>
+                <td>{{ row['Assigned to'] }}</td>
+                <td class="manager-cell">{{ row['Requestor1'] }}</td>
+                <td class="manager-cell">{{ row['Requestor2'] }}</td>
+                <td class="manager-cell">{{ row['Requestor3'] }}</td>
+                <td class="manager-cell">{{ row['Requestor4'] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <br>
+    <button onclick="exportToExcel()">Export to Excel</button>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function filterTable() {
+            var selectedManager = $("#picklist").val();
+            $("table tbody tr").each(function() {
+                var rowManager1 = $(this).find("td.manager-cell:eq(0)").text().trim();
+                var rowManager2 = $(this).find("td.manager-cell:eq(1)").text().trim();
+                var rowManager3 = $(this).find("td.manager-cell:eq(2)").text().trim();
+                var rowManager4 = $(this).find("td.manager-cell:eq(3)").text().trim();
+                if (rowManager1 !== selectedManager && rowManager2 !== selectedManager && rowManager3 !== selectedManager && rowManager4 !== selectedManager && selectedManager !== "All") {
+                    $(this).hide();
+                } else {
+                    $(this).show();
+                }
+            });
+        }
+        function exportToExcel() {
+        var filteredRows = [];
+        $("table tbody tr:visible").each(function() {
+            var row = [];
+            $(this).find("td").each(function() {
+                row.push($(this).text());
+            });
+            filteredRows.push(row);
+        });
+
+        var headers = [];
+        $("table th").each(function() {
+            headers.push($(this).text());
+        });
+
+        var data = [headers, ...filteredRows];
+        var csvContent = "data:text/csv;charset=utf-8,";
+
+        data.forEach(function(rowArray) {
+            var row = rowArray.join(",");
+            csvContent += row + "\r\n";
+        });
+
+        var encodedUri = encodeURI(csvContent);
+        var link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "filtered_data.csv");
+        document.body.appendChild(link);
+        link.click();
+        }
+    </script>
+</body>
+</html>
